@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: ktslab
+  labels:
+    app: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: api
+          # Non-existent tag reproduces ErrImagePull -> ImagePullBackOff.
+          image: nginx:1.27.notreal
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+# Fix: correct the tag.
+#   kubectl set image deployment/api api=nginx:1.27 -n ktslab
+#
+# For a private registry, also attach an imagePullSecret:
+#   imagePullSecrets:
+#     - name: regcred

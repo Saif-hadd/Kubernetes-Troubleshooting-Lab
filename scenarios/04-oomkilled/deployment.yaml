@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memory-hog
+  namespace: ktslab
+  labels:
+    app: memory-hog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memory-hog
+  template:
+    metadata:
+      labels:
+        app: memory-hog
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: memory-hog
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          # Allocates ~1MB per iteration and never frees -> crosses 128Mi limit.
+          args:
+            - |
+              echo "starting memory allocator"
+              i=0
+              while true; do
+                # Append 1MB of data into a variable that is never released.
+                buf="${buf}$(head -c 1048576 /dev/urandom | base64)"
+                i=$((i+1))
+                echo "allocated approx ${i}Mi, sleeping 1s"
+                sleep 1
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+# Fix A — raise the limit to a value above steady-state RSS:
+#   limits:
+#     memory: 512Mi
+#
+# Fix B — for a real leak, fix the application and profile RSS over time.
+# Set requests == limits for Guaranteed QoS on critical workloads:
+#   requests:
+#     memory: 512Mi
+#   limits:
+#     memory: 512Mi

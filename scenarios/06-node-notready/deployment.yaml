@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: ktslab
+  labels:
+    app: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      restartPolicy: Always
+      # Prefer spreading across nodes so a single NotReady node does not
+      # take down the whole tier.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: worker
+      containers:
+        - name: worker
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'worker ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+            # Ephemeral storage limit prevents a single Pod from filling the
+            # node disk and triggering DiskPressure on the host.
+            ephemeral-storage: 512Mi
+# Reproduce NotReady on a chosen node (run outside Kubernetes):
+#   kubectl cordon <node>                       # mark unschedulable
+#   kubectl debug node/<node> -it --image=busybox
+#   # inside: fill the node filesystem to cross eviction-hard threshold:
+#   # chroot /host dd if=/dev/zero of=/tmp/fill bs=1M count=99999
+# The kubelet will set DiskPressure=True and Ready=NotReady and begin evicting.
+#
+# Recover:
+#   kubectl uncordon <node>                      # after cleaning the disk
+#   kubectl delete node <node>                   # if unrecoverable (AS replaces it)

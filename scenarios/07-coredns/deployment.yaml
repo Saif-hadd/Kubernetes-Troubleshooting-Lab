@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: webapp
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'webapp ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+# This scenario reproduces a broken kube-dns Service selector. The standard
+# kube-dns Service selects k8s-app=kube-dns. To reproduce the failure:
+#
+#   kubectl patch svc -n kube-system kube-dns --type=json \
+#     -p='[{"op":"replace","path":"/spec/selector","value":{"k8s-app":"wrong"}}]'
+#
+# Then:
+#   kubectl exec -n ktslab <pod> -- nslookup db.ktslab.svc.cluster.local
+#   -> connection timed out; no servers could be reached
+#
+# Confirm:
+#   kubectl get endpoints -n kube-system kube-dns   # <none>
+#
+# Fix:
+#   kubectl patch svc -n kube-system kube-dns --type=json \
+#     -p='[{"op":"replace","path":"/spec/selector","value":{"k8s-app":"kube-dns"}}]'

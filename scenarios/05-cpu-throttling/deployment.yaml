@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-burst
+  namespace: ktslab
+  labels:
+    app: api-burst
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-burst
+  template:
+    metadata:
+      labels:
+        app: api-burst
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: api-burst
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          # Spins hard on CPU -> exhausts 50m quota in ~5ms of each 100ms
+          # period -> throttled for the remaining ~95ms. Node can be idle.
+          args:
+            - |
+              echo "api-burst starting"
+              i=0
+              while true; do
+                i=$((i+1))
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 50m
+              memory: 128Mi
+# Fix A — remove the CPU limit, keep the request:
+#   resources:
+#     requests:
+#       cpu: 250m
+#       memory: 64Mi
+#     limits:
+#       memory: 128Mi
+#
+# Fix B — raise the limit to allow bursts:
+#   limits:
+#     cpu: 1000m
+#     memory: 128Mi

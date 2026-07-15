@@ -1,0 +1,39 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+  namespace: ktslab
+  labels:
+    app: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+# The HPA shows <unknown>/80% until metrics-server is installed AND the target
+# Pods have resources.requests.cpu (already set above).
+#
+# Install metrics-server:
+#   minikube addons enable metrics-server
+#   # or:
+#   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+#
+# Verify:
+#   kubectl get --raw /apis/metrics.k8s.io/v1beta1/namespaces/ktslab/pods/api
+#   kubectl get hpa -n ktslab api -w

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-runner
+  namespace: ktslab
+  labels:
+    app: ci-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ci-runner
+  template:
+    metadata:
+      labels:
+        app: ci-runner
+    spec:
+      serviceAccountName: ci-deployer
+      restartPolicy: Always
+      containers:
+        - name: kubectl
+          image: bitnami/kubectl:1.29
+          command: ["/bin/sh", "-c"]
+          # Tries to list Pods using the mounted ServiceAccount token.
+          # Without the Role/RoleBinding this returns 403 Forbidden.
+          args:
+            - |
+              while true; do
+                kubectl get pods -n ktslab || echo "get pods failed (forbidden?)"
+                sleep 30
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi

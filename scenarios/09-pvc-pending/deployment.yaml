@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  namespace: ktslab
+  labels:
+    app: db
+spec:
+  serviceName: db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: db
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'db ready'; sleep 3600"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: data-claim
+# Apply order: kubectl apply -f pvc.yaml -f deployment.yaml
+# The Pod stays in ContainerCreating because the PVC is Pending
+# (StorageClass fast-ssd-bad does not exist).

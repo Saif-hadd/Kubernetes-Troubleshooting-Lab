@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: webapp.ktslab.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webapp
+                port:
+                  number: 8080
+# Prerequisite: an Ingress controller must be installed, e.g.:
+#   minikube addons enable ingress
+# or on Kind/EKS:
+#   helm install ingress-nginx ingress-nginx/ingress-nginx
+#
+# The Ingress object itself is correct; the failure is the Service selector
+# in service.yaml (no Endpoints -> 503).

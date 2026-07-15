@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batch-worker
+  namespace: ktslab
+  labels:
+    app: batch-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: batch-worker
+  template:
+    metadata:
+      labels:
+        app: batch-worker
+    spec:
+      # Unsatisfiable: no node carries disktype=ssd AND no node has 16Gi free.
+      nodeSelector:
+        disktype: ssd
+      restartPolicy: Always
+      containers:
+        - name: worker
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'batch worker ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 2
+              memory: 16Gi
+            limits:
+              cpu: 2
+              memory: 16Gi
+# Fixes (apply one or both):
+#
+# 1. Label a node to match the selector:
+#    kubectl label node <node> disktype=ssd
+#
+# 2. Lower the request to fit the node, e.g.:
+#    requests:
+#      cpu: 100m
+#      memory: 256Mi

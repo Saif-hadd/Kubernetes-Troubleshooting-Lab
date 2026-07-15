@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-worker
+  namespace: ktslab
+  labels:
+    app: gpu-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gpu-worker
+  template:
+    metadata:
+      labels:
+        app: gpu-worker
+    spec:
+      restartPolicy: Always
+      # Requests a GPU and tolerates the GPU taint. If no NodePool in the
+      # cluster admits GPU instances, Karpenter never provisions and the Pod
+      # stays Pending.
+      nodeSelector:
+        workload: gpu
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: worker
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'gpu worker ready'; sleep 3600"]
+          resources:
+            requests:
+              nvidia.com/gpu: 1
+              cpu: 1
+              memory: 1Gi
+            limits:
+              nvidia.com/gpu: 1
+              memory: 2Gi

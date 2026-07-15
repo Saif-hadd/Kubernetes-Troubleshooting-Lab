@@ -1,0 +1,48 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: gpu-pool
+  labels:
+    app.kubernetes.io/part-of: ktslab
+spec:
+  template:
+    metadata:
+      labels:
+        workload: gpu
+    spec:
+      taints:
+        - key: nvidia.com/gpu
+          effect: NoSchedule
+      requirements:
+        - key: karpenter.k8s.aws/instance-gpu-count
+          operator: Gt
+          values: ["0"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["us-east-1a", "us-east-1b"]
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: gpu-profile
+  limits:
+    cpu: 1000
+    memory: 1000Gi
+  disruption:
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    consolidateAfter: 30s
+# NOTE: Karpenter + an EC2NodeClass + the NVIDIA GPU operator must be
+# installed on an EKS cluster for this to provision. On Minikube/Kind this
+# manifest is documentation-only.
+#
+# A matching EC2NodeClass is required, e.g.:
+#   apiVersion: karpenter.k8s.aws/v1
+#   kind: EC2NodeClass
+#   metadata:
+#     name: gpu-profile
+#   spec:
+#     amiFamily: AL2023
+#     subnetSelectorTerms:
+#       - tags: { karpenter.sh/discovery: <cluster-name> }
+#     securityGroupSelectorTerms:
+#       - tags: { karpenter.sh/discovery: <cluster-name> }
+#     role: KarpenterNodeRole-<cluster-name>

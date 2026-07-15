@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-claim
+  namespace: ktslab
+  labels:
+    app: db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd-bad   # does not exist -> PVC stays Pending
+  resources:
+    requests:
+      storage: 5Gi
+# Fix A — create the StorageClass and correct the name:
+#   kubectl apply -f - <<'EOF'
+#   apiVersion: storage.k8s.io/v1
+#   kind: StorageClass
+#   metadata:
+#     name: fast-ssd
+#   provisioner: ebs.csi.aws.com        # or pd.csi.storage.gke.io / csi-hostpath
+#   parameters:
+#     type: gp3
+#   volumeBindingMode: WaitForFirstConsumer
+#   EOF
+#
+# Then patch the PVC:
+#   kubectl patch pvc -n ktslab data-claim --type=json \
+#     -p='[{"op":"replace","path":"/spec/storageClassName","value":"fast-ssd"}]'
+#
+# On Minikube use storageClassName: standard (the built-in hostpath provisioner).

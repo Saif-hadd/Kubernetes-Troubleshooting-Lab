@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# A workload whose creation depends on a healthy control plane. When etcd is
+# degraded (slow fsync) or has lost quorum, this Deployment stalls in
+# ContainerCreating/Pending even though nodes are healthy.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      restartPolicy: Always
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: webapp
+      containers:
+        - name: webapp
+          image: nginx:1.27
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+# This scenario is control-plane focused. To observe the symptom of etcd
+# degradation on a self-managed cluster, slow the etcd disk (e.g. attach a
+# heavily contended volume) and run:
+#   time kubectl get nodes
+#   kubectl get --raw='/readyz?verbose'
+#   ETCDCTL_API=3 etcdctl endpoint health --cluster --cacert=… --cert=… --key=…
+# On EKS/GKE/AKS, etcd is managed; a provider-side degradation shows up as
+# API throttling/latency with no Pod at fault.
