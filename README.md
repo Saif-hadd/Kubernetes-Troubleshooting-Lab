@@ -403,10 +403,10 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Author
 
-Créé et maintenu par **Saif Eddine Keraa**
+Created and maintained by **Saif Eddine Keraa**
 
-- 💼 LinkedIn : [Saif Eddine Keraa](https://www.linkedin.com/in/saif-eddine-keraa-2838a71b9/)
-- 💻 GitHub : [@Saif-hadd](https://github.com/Saif-hadd)
+- 💼 LinkedIn: [Saif Eddine Keraa](https://www.linkedin.com/in/saif-eddine-keraa-2838a71b9/)
+- 💻 GitHub: [@Saif-hadd](https://github.com/Saif-hadd)
 
-N'hésitez pas à vous connecter ou à ouvrir une issue si vous avez des questions
-sur le projet ou des suggestions de scénarios.
+Feel free to connect, or open an issue if you have questions about the
+project or suggestions for new scenarios.
