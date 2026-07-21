@@ -19,7 +19,8 @@ spec:
       restartPolicy: Always
       containers:
         - name: kubectl
-          image: bitnami/kubectl:1.29
+          image: bitnami/kubectl:latest
+          imagePullPolicy: IfNotPresent
           command: ["/bin/sh", "-c"]
           # Tries to list Pods using the mounted ServiceAccount token.
           # Without the Role/RoleBinding this returns 403 Forbidden.
