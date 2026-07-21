@@ -400,3 +400,13 @@ guidelines on adding scenarios, improving manifests, and raising the quality bar
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+## Author
+
+Créé et maintenu par **Saif Eddine Keraa**
+
+- 💼 LinkedIn : [Saif Eddine Keraa](https://www.linkedin.com/in/saif-eddine-keraa-2838a71b9/)
+- 💻 GitHub : [@Saif-hadd](https://github.com/Saif-hadd)
+
+N'hésitez pas à vous connecter ou à ouvrir une issue si vous avez des questions
+sur le projet ou des suggestions de scénarios.
