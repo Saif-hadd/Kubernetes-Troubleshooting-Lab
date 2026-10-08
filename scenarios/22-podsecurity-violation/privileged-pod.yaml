@@ -1,0 +1,29 @@
+# This Pod violates the Restricted Pod Security Standard and will be REJECTED
+# by the API server in a namespace that enforces it:
+#   - it runs as root (no runAsNonRoot)
+#   - it requests privileged mode and adds capabilities
+#   - it does not set a seccomp profile, and does not drop ALL capabilities
+apiVersion: v1
+kind: Pod
+metadata:
+  name: privileged
+  namespace: ktslab-restricted
+  labels:
+    app: privileged
+spec:
+  containers:
+    - name: root
+      image: busybox:1.36
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      securityContext:
+        privileged: true
+        allowPrivilegeEscalation: true
+        capabilities:
+          add: ["NET_ADMIN", "SYS_ADMIN"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi

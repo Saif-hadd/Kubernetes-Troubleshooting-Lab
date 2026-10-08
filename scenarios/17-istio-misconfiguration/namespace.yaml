@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+    # Asks Istio to inject a sidecar into every Pod in this namespace.
+    # If Istio is not installed, or the label does not match the
+    # istiod `--discovery-selectors` configuration, nothing is injected.
+    istio-injection: enabled

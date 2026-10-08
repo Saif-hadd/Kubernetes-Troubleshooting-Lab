@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  ingressClassName: nginx
+  tls:
+    # The Ingress terminates TLS with this Secret. Kubernetes does not
+    # validate the certificate, so an EXPIRED cert is accepted here and only
+    # fails at the TLS handshake, at the client.
+    - hosts:
+        - webapp.ktslab.local
+      secretName: webapp-tls
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: webapp
+                port:
+                  number: 80

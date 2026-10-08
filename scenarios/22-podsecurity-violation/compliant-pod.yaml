@@ -1,0 +1,30 @@
+# A Pod that satisfies the Restricted Pod Security Standard: accepted.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: restricted
+  namespace: ktslab-restricted
+  labels:
+    app: restricted
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox:1.36
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi

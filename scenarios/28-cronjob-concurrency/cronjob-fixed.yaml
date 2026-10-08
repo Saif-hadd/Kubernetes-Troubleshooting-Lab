@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report
+  namespace: ktslab
+  labels:
+    app: report
+spec:
+  schedule: "* * * * *"
+  # FIX 1: forbid overlapping runs — skip a schedule if the previous Job is
+  # still running instead of piling up.
+  concurrencyPolicy: Forbid
+  # FIX 2: if the controller was down, do not try to start every missed run;
+  # skip a run if it is more than 30s late.
+  startingDeadlineSeconds: 30
+  # FIX 3: bound the history so completed/failed Jobs do not accumulate.
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      # FIX 4: bound retries and lifetime for a runaway Job.
+      backoffLimit: 2
+      activeDeadlineSeconds: 120
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: report
+              image: busybox:1.36
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  echo "report job started at $(date)"
+                  sleep 60
+                  echo "report job finished at $(date)"
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 32Mi
+                limits:
+                  cpu: 100m
+                  memory: 64Mi

@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# Two Pods that should be able to reach each other through the CNI. If the CNI
+# dataplane is broken (missing routes, a dead agent, an exhausted IPAM pool),
+# these Pods may be Running but unable to communicate — or be stuck
+# ContainerCreating because the sandbox cannot be set up.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: ktslab
+  labels:
+    app: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: client
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'client ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: ktslab
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: server
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'server ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
