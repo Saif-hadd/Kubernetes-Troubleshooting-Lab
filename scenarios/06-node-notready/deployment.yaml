@@ -38,14 +38,14 @@ spec:
           command: ["/bin/sh", "-c"]
           args: ["echo 'worker ready'; sleep 3600"]
           resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
-    ephemeral-storage: 256Mi
-  limits:
-    cpu: 250m
-    memory: 128Mi
-    ephemeral-storage: 512Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+              ephemeral-storage: 256Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi
+              ephemeral-storage: 512Mi
 # Reproduce NotReady on a chosen node (run outside Kubernetes):
 #   kubectl cordon <node>                       # mark unschedulable
 #   kubectl debug node/<node> -it --image=busybox
