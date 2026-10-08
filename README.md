@@ -218,6 +218,19 @@ flowchart TD
 | 13 | [Karpenter](scenarios/13-karpenter/) | Autoscaling | Node provisioning |
 | 14 | [etcd](scenarios/14-etcd/) | Control plane | Quorum / latency |
 | 15 | [API Server](scenarios/15-api-server/) | Control plane | API availability |
+| 16 | [InitContainer failure](scenarios/16-initcontainer-failure/) | Workload | Init container crash |
+| 17 | [Service mesh (Istio)](scenarios/17-istio-misconfiguration/) | Network | Sidecar / mTLS |
+| 18 | [Certificate / TLS expiry](scenarios/18-certificate-expiry/) | Control plane | Expired certificates |
+| 19 | [conntrack exhaustion](scenarios/19-conntrack-exhaustion/) | Network | Node dataplane |
+| 20 | [Cluster autoscaler stuck](scenarios/20-cluster-autoscaler-stuck/) | Autoscaling | Capacity supply |
+| 21 | [Volume detach/attach stuck](scenarios/21-volume-detach-stuck/) | Storage | Attach / detach |
+| 22 | [PodSecurity violation](scenarios/22-podsecurity-violation/) | Control plane | Admission policy |
+| 23 | [Leader election churn](scenarios/23-leader-election-churn/) | Control plane | Control-plane stability |
+| 24 | [DNS ndots storms](scenarios/24-dns-ndots-storms/) | Network | DNS latency |
+| 25 | [Metrics scrape failure](scenarios/25-metrics-scrape-failure/) | Autoscaling | Metrics pipeline |
+| 26 | [CNI plugin failure](scenarios/26-cni-plugin-failure/) | Network | Cluster networking |
+| 27 | [kubelet PLEG issues](scenarios/27-kubelet-pleg/) | Node | Runtime / kubelet |
+| 28 | [CronJob concurrency](scenarios/28-cronjob-concurrency/) | Workload | Batch scheduling |
 
 ---
 
@@ -363,6 +376,19 @@ Screenshots of each scenario reproduced on a real cluster live in
 | 13 Karpenter | `assets/screenshots/13-karpenter.png` |
 | 14 etcd | `assets/screenshots/14-etcd.png` |
 | 15 API Server | `assets/screenshots/15-api-server.png` |
+| 16 InitContainer failure | `assets/screenshots/16-initcontainer-failure.png` |
+| 17 Service mesh (Istio) | `assets/screenshots/17-istio-misconfiguration.png` |
+| 18 Certificate / TLS expiry | `assets/screenshots/18-certificate-expiry.png` |
+| 19 conntrack exhaustion | `assets/screenshots/19-conntrack-exhaustion.png` |
+| 20 Cluster autoscaler stuck | `assets/screenshots/20-cluster-autoscaler-stuck.png` |
+| 21 Volume detach/attach stuck | `assets/screenshots/21-volume-detach-stuck.png` |
+| 22 PodSecurity violation | `assets/screenshots/22-podsecurity-violation.png` |
+| 23 Leader election churn | `assets/screenshots/23-leader-election-churn.png` |
+| 24 DNS ndots storms | `assets/screenshots/24-dns-ndots-storms.png` |
+| 25 Metrics scrape failure | `assets/screenshots/25-metrics-scrape-failure.png` |
+| 26 CNI plugin failure | `assets/screenshots/26-cni-plugin-failure.png` |
+| 27 kubelet PLEG issues | `assets/screenshots/27-kubelet-pleg.png` |
+| 28 CronJob concurrency | `assets/screenshots/28-cronjob-concurrency.png` |
 
 > Placeholders — capture your own by running each scenario and screenshotting
 > the `kubectl` output. Keeping real output in the repo keeps the examples
@@ -374,19 +400,19 @@ Screenshots of each scenario reproduced on a real cluster live in
 
 Planned additions, prioritized by how often they appear in production incidents:
 
-- [ ] **16 - InitContainer failure** — `Init:CrashLoopBackOff` vs main container
-- [ ] **17 - Service mesh (Istio) misconfiguration** — sidecar injection, mTLS
-- [ ] **18 - Certificate / TLS expiry** — expired serving certs, kubelet client certs
-- [ ] **19 - kube-proxy conntrack exhaustion** — `nf_conntrack: table full`
-- [ ] **20 - Cluster autoscaler stuck** — `cluster-autoscaler` status, max node limit
-- [ ] **21 - Volume detach/attach stuck** — stuck volumes after node drain
-- [ ] **22 - PodSecurity admission violation** — `Restricted` policy, privileged pods
-- [ ] **23 - Leader election churn** — controller-manager / scheduler flapping
-- [ ] **24 - DNS ndots / search domain storms** — external name resolution latency
-- [ ] **25 - Metrics server scrape failure** — HPA showing `<unknown>` targets
-- [ ] **26 - CNI plugin failure** — Calico/Cilium dataplane, missing routes
-- [ ] **27 - kubelet PLEG issues** — `PLEG is not healthy` events
-- [ ] **28 - CronJob concurrency / missed schedules** — `successfulJobsHistoryLimit`
+- [x] **16 - InitContainer failure** — `Init:CrashLoopBackOff` vs main container
+- [x] **17 - Service mesh (Istio) misconfiguration** — sidecar injection, mTLS
+- [x] **18 - Certificate / TLS expiry** — expired serving certs, kubelet client certs
+- [x] **19 - kube-proxy conntrack exhaustion** — `nf_conntrack: table full`
+- [x] **20 - Cluster autoscaler stuck** — `cluster-autoscaler` status, max node limit
+- [x] **21 - Volume detach/attach stuck** — stuck volumes after node drain
+- [x] **22 - PodSecurity admission violation** — `Restricted` policy, privileged pods
+- [x] **23 - Leader election churn** — controller-manager / scheduler flapping
+- [x] **24 - DNS ndots / search domain storms** — external name resolution latency
+- [x] **25 - Metrics server scrape failure** — HPA showing `<unknown>` targets
+- [x] **26 - CNI plugin failure** — Calico/Cilium dataplane, missing routes
+- [x] **27 - kubelet PLEG issues** — `PLEG is not healthy` events
+- [x] **28 - CronJob concurrency / missed schedules** — `successfulJobsHistoryLimit`
 
 ---
 

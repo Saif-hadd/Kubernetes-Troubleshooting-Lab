@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          # BUG: the init container gives up on the first failed check. The
+          # dependency (migrate-db.ktslab.svc.cluster.local) is not up yet, so the
+          # lookup fails and the init container exits 1 -> the Pod cycles
+          # through Init:Error / Init:CrashLoopBackOff and the main container
+          # never starts.
+          args:
+            - |
+              echo "checking dependency migrate-db.ktslab.svc.cluster.local"
+              if ! nslookup migrate-db.ktslab.svc.cluster.local; then
+                echo "dependency is not reachable"
+                exit 1
+              fi
+              echo "dependency is up"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      containers:
+        - name: webapp
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'webapp ready'; sleep 3600"]
+          readinessProbe:
+            exec:
+              command: ["/bin/sh", "-c", "test -f /tmp/ready || touch /tmp/ready"]
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi

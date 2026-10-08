@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# A workload whose rollouts stall while leader election flaps: the
+# controller-manager is not reconciling, so the Deployment makes no progress
+# even though the Pods it has are healthy.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: webapp
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'webapp ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 128Mi

@@ -1,0 +1,37 @@
+# A minimal backend so the `webapp` Service has Endpoints — the churn workload
+# needs a reachable target to open connections to.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: ktslab
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: webapp
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'webapp ready'; while true; do nc -l -p 8080 -e echo 'ok'; done"]
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

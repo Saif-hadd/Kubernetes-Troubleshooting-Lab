@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# A workload that opens a stream of short-lived connections. Enough of these
+# across the cluster (or a single high-churn client) fills the node's
+# conntrack table and produces "nf_conntrack: table full, dropping packet".
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conn-churn
+  namespace: ktslab
+  labels:
+    app: conn-churn
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: conn-churn
+  template:
+    metadata:
+      labels:
+        app: conn-churn
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: churn
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "opening short-lived connections"
+              while true; do
+                wget -q -T1 -O /dev/null http://webapp.ktslab.svc.cluster.local/ || true
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

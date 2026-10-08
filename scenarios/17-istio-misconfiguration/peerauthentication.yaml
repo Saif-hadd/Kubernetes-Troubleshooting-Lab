@@ -1,0 +1,11 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: ktslab
+spec:
+  # STRICT: reject all plaintext traffic to the mesh in this namespace.
+  # With a partially-injected namespace this is exactly what breaks the
+  # un-injected Pods (sidecar-less) — plaintext is refused.
+  mtls:
+    mode: STRICT

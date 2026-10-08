@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# This workload requests more CPU than any node in a small cluster provides and
+# does not fit the cluster's existing node sizes. A working autoscaler would
+# add a larger node; if it is stuck (at max size, missing permissions, no
+# matching node group, or below the scale-up threshold) the Pod stays Pending.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: big-worker
+  namespace: ktslab
+  labels:
+    app: big-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: big-worker
+  template:
+    metadata:
+      labels:
+        app: big-worker
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: worker
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args: ["echo 'big worker ready'; sleep 3600"]
+          resources:
+            requests:
+              cpu: 8
+              memory: 16Gi
+            limits:
+              cpu: 8
+              memory: 16Gi

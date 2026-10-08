@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktslab
+  labels:
+    app.kubernetes.io/part-of: ktslab
+---
+# A Pod doing what most apps do: resolve a short, unqualified external name.
+# With the default ndots:5 and the cluster search domains, every such lookup
+# first tries <name>.<ns>.svc.cluster.local, then <name>.svc.cluster.local,
+# then <name>.cluster.local, ... before the real external query — up to 6
+# lookups per name. On a busy service this multiplies DNS traffic and latency.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resolver
+  namespace: ktslab
+  labels:
+    app: resolver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resolver
+  template:
+    metadata:
+      labels:
+        app: resolver
+    spec:
+      restartPolicy: Always
+      # FIX (uncomment): lower ndots and pin a resolv.conf without the search
+      # storm for external-heavy workloads.
+      # dnsConfig:
+      #   options:
+      #     - name: ndots
+      #       value: "2"
+      containers:
+        - name: resolver
+          image: busybox:1.36
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "resolv.conf:"; cat /etc/resolv.conf
+              while true; do
+                nslookup api.external.example.com >/dev/null 2>&1 || true
+                sleep 5
+              done
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
